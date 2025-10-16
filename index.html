@@ -491,14 +491,7 @@
                 locateFile: file => `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/${file}`
             });
 
-            // Dropbox-Download-Link hier eintragen:
-            const dbUrl = 'https://www.dropbox.com/s/abc123/abroad_experiences.sqlite?dl=1';
-
-            // Lade die Datei als ArrayBuffer
-            const response = await fetch(dbUrl);
-            const buffer = await response.arrayBuffer();
-
-            db = new SQL.Database(new Uint8Array(buffer));
+            db = new SQL.Database();
             
             // Create empty tables (will be populated when SQL file is loaded)
             db.run(`
