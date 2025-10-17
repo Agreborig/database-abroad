@@ -5,211 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Student Abroad Experiences</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/sql-wasm.js"></script>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            padding: 20px;
-        }
-        
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-        
-        header {
-            text-align: center;
-            color: white;
-            margin-bottom: 30px;
-        }
-        
-        h1 {
-            font-size: 2.5em;
-            margin-bottom: 10px;
-        }
-        
-        .tabs {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-            justify-content: center;
-        }
-        
-        .tab {
-            padding: 12px 30px;
-            background: rgba(255, 255, 255, 0.2);
-            border: none;
-            border-radius: 25px;
-            color: white;
-            font-size: 16px;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-        
-        .tab:hover {
-            background: rgba(255, 255, 255, 0.3);
-        }
-        
-        .tab.active {
-            background: white;
-            color: #667eea;
-            font-weight: bold;
-        }
-        
-        .content-box {
-            background: white;
-            border-radius: 15px;
-            padding: 30px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-        }
-        
-        .view {
-            display: none;
-        }
-        
-        .view.active {
-            display: block;
-        }
-        
-        .filters {
-            display: flex;
-            gap: 15px;
-            margin-bottom: 25px;
-            flex-wrap: wrap;
-        }
-        
-        .filter-group {
-            flex: 1;
-            min-width: 200px;
-        }
-        
-        .filter-group label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: 600;
-            color: #333;
-        }
-        
-        .filter-group input, .filter-group select {
-            width: 100%;
-            padding: 10px;
-            border: 2px solid #e0e0e0;
-            border-radius: 8px;
-            font-size: 14px;
-        }
-        
-        .experience-card {
-            background: #f8f9fa;
-            border-radius: 10px;
-            padding: 20px;
-            margin-bottom: 15px;
-            border-left: 4px solid #667eea;
-        }
-        
-        .experience-card h3 {
-            color: #667eea;
-            margin-bottom: 10px;
-        }
-        
-        .experience-meta {
-            display: flex;
-            gap: 20px;
-            margin: 10px 0;
-            flex-wrap: wrap;
-        }
-        
-        .experience-meta span {
-            font-size: 14px;
-            color: #666;
-        }
-        
-        .ratings {
-            display: flex;
-            gap: 15px;
-            margin: 15px 0;
-            flex-wrap: wrap;
-        }
-        
-        .rating {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-        
-        .stars {
-            color: #ffc107;
-        }
-        
-        .form-group {
-            margin-bottom: 20px;
-        }
-        
-        .form-group label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: 600;
-            color: #333;
-        }
-        
-        .form-group input, .form-group textarea, .form-group select {
-            width: 100%;
-            padding: 10px;
-            border: 2px solid #e0e0e0;
-            border-radius: 8px;
-            font-size: 14px;
-            font-family: inherit;
-        }
-        
-        .form-group textarea {
-            min-height: 100px;
-            resize: vertical;
-        }
-        
-        .form-row {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-        }
-        
-        .btn {
-            padding: 12px 30px;
-            background: #667eea;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-        
-        .btn:hover {
-            background: #764ba2;
-            transform: translateY(-2px);
-        }
-        
-        .success-message {
-            background: #d4edda;
-            color: #155724;
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            display: none;
-        }
-        
-        .no-results {
-            text-align: center;
-            color: #999;
-            padding: 40px;
-        }
-    </style>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="container">
@@ -220,10 +16,10 @@
         
         <!-- SQL File Upload Section -->
         <div class="content-box" style="margin-bottom: 20px; text-align: center;">
-            <label for="sql-upload" style="cursor: pointer; padding: 10px 20px; background: white; border: 2px dashed #667eea; border-radius: 8px; display: inline-block;">
+            <label for="sql-upload" id="db-upload-label" style="cursor: pointer; padding: 10px 20px; background: white; border: 2px dashed #667eea; border-radius: 8px; display: inline-block;">
                 📁 Load SQL Database File (abroad_experiences.sql)
             </label>
-            <input type="file" id="sql-upload" accept=".sql" style="display: none;">
+            <input type="file" id="sql-upload" accept=".sql,.sqlite" style="display: none;">
             <button id="download-db" class="btn" style="margin-left: 20px;">⬇️ Download Database</button>
             <p id="upload-status" style="margin-top: 10px; font-size: 14px; color: white;"></p>
         </div>
@@ -241,14 +37,21 @@
                 <h2>Study Abroad Experiences</h2>
                 <div class="filters">
                     <div class="filter-group">
+                        <label>Continent</label>
+                        <select id="filter-study-continent">
+                            <option value="">All</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
                         <label>Country</label>
                         <input type="text" id="filter-study-country" placeholder="Search by country...">
                     </div>
                     <div class="filter-group">
-                        <label>Institution</label>
-                        <input type="text" id="filter-study-institution" placeholder="Search by institution...">
+                        <label>University</label>
+                        <input type="text" id="filter-study-institution" placeholder="Search by university...">
                     </div>
                 </div>
+                <div id="filter-summary"></div>
                 <div id="study-results"></div>
             </div>
             
@@ -270,107 +73,303 @@
             
             <!-- Add Study Experience -->
             <div id="add-study" class="view">
-                <h2>Share Your Study Abroad Experience</h2>
+                <h2 id="study-form-title">Share Your Study Abroad Experience</h2>
                 <div class="success-message" id="study-success">Experience added successfully!</div>
                 <form id="study-form">
+                    <input type="hidden" name="entry_id">
                     <div class="form-row">
                         <div class="form-group">
-                            <label>Country *</label>
-                            <input type="text" name="country" required>
+                            <label>First Name *</label>
+                            <input name="stud_first_name" type="text">
                         </div>
                         <div class="form-group">
-                            <label>City *</label>
-                            <input type="text" name="city" required>
+                            <label>Last Name *</label>
+                            <input name="stud_last_name" type="text">
                         </div>
                     </div>
-                    
-                    <div class="form-group">
-                        <label>Institution *</label>
-                        <input type="text" name="institution" required>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label>Duration (e.g., Fall 2023, Spring 2024) *</label>
-                        <input type="text" name="duration" required>
-                    </div>
-                    
                     <div class="form-row">
                         <div class="form-group">
-                            <label>Tuition Cost (EUR)</label>
-                            <input type="number" name="tuition_cost" step="0.01" min="0">
+                            <label>Contact E-Mail *</label>
+                            <input name="stud_email" type="email">
                         </div>
                         <div class="form-group">
-                            <label>Living Cost (EUR) *</label>
-                            <input type="number" name="living_cost" step="0.01" min="0" required>
-                        </div>
-                        <div class="form-group">
-                            <label>Total Cost (EUR) *</label>
-                            <input type="number" name="total_cost" step="0.01" min="0" required>
-                        </div>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label>Financing Methods (e.g., Erasmus+, Personal savings)</label>
-                        <input type="text" name="financing_methods">
-                    </div>
-                    
-                    <div class="form-group">
-                        <label>Courses Taken</label>
-                        <textarea name="courses_taken"></textarea>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label>Course Description</label>
-                        <textarea name="course_description"></textarea>
-                    </div>
-                    
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label>Academic Rating (1-5) *</label>
-                            <select name="rating_academics" required>
-                                <option value="">Select...</option>
-                                <option value="5">5 - Excellent</option>
-                                <option value="4">4 - Good</option>
-                                <option value="3">3 - Average</option>
-                                <option value="2">2 - Below Average</option>
-                                <option value="1">1 - Poor</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label>Social Life Rating (1-5) *</label>
-                            <select name="rating_social_life" required>
-                                <option value="">Select...</option>
-                                <option value="5">5 - Excellent</option>
-                                <option value="4">4 - Good</option>
-                                <option value="3">3 - Average</option>
-                                <option value="2">2 - Below Average</option>
-                                <option value="1">1 - Poor</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label>Cost of Living Rating (1-5) *</label>
-                            <select name="rating_cost_of_living" required>
-                                <option value="">Select...</option>
-                                <option value="5">5 - Very Affordable</option>
-                                <option value="4">4 - Affordable</option>
-                                <option value="3">3 - Moderate</option>
-                                <option value="2">2 - Expensive</option>
-                                <option value="1">1 - Very Expensive</option>
+                            <label>Study Class</label>
+                            <select name="stud_class_year">
                             </select>
                         </div>
                     </div>
-                    
-                    <div class="form-group">
-                        <label>Application Tips</label>
-                        <textarea name="application_tips"></textarea>
+
+                    <div class="form-tabs">
+                        <button type="button" class="form-tab active" data-tab="university">University</button>
+                        <button type="button" class="form-tab" data-tab="courses">Courses</button>
+                        <button type="button" class="form-tab" data-tab="housing">Housing</button>
+                        <button type="button" class="form-tab" data-tab="visa">Visa</button>
+                        <button type="button" class="form-tab" data-tab="finances">Finances</button>
+                        <button type="button" class="form-tab" data-tab="vaccination">Vaccination</button>
+                    </div>
+
+                    <div class="form-content">
+                        <!-- University Tab -->
+                        <div id="university-tab" class="form-tab-content active">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Country *</label>
+                                    <input name="country" list="countries">
+                                    <datalist id="countries"></datalist>
+                                </div>
+                                <div class="form-group">
+                                    <label>City *</label>
+                                    <input name="city" list="cities">
+                                    <datalist id="cities"></datalist>
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Continent (political) *</label>
+                                    <select name="continent">
+                                        <option value="">Choose continent...</option>
+                                        <option value="Afrika">Afrika</option>
+                                        <option value="Asien">Asien</option>
+                                        <option value="Australien">Asien</option>
+                                        <option value="Europa">Europa</option>
+                                        <option value="Nordamerika">Nordamerika</option>
+                                        <option value="Südamerika">Südamerika</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label>PLZ</label>
+                                    <input name="plz" type="text">
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>University *</label>
+                                    <input name="university" list="institutions">
+                                    <datalist id="institutions"></datalist>
+                                </div>
+                                <div class="form-group">
+                                    <label>Duration *</label>
+                                    <input name="duration" type="text">
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Website</label>
+                                    <input name="website" type="url">
+                                </div>
+                                <div class="form-group">
+                                    <label>Website of Department</label>
+                                    <input name="department_website" type="url">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>Application Tips</label>
+                                <textarea name="application_tips" placeholder="Share tips for future students applying to this program..."></textarea>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label>General Comments</label>
+                                <textarea name="general_comments" placeholder="Your overall thoughts and experiences..."></textarea>
+                            </div>
+                            
+
+                        </div>
+
+                        <!-- Finances Tab -->
+                        <div id="finances-tab" class="form-tab-content">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label><input type="checkbox" name="study_fees"> Study Fees</label>
+                                </div>
+                                <div class="form-group">
+                                    <label>Study Fees per Semester</label>
+                                    <input name="tuition_cost" type="text">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>Financing Methods</label>
+                                <select name="financing_methods">
+                                    <option value="">Select...</option>
+                                    <option value="AuslandsBafög">AuslandsBafög</option>
+                                    <option value="Erasmus">Erasmus</option>
+                                    <option value="DAAD">DAAD</option>
+                                    <option value="Studentenkredit">Studentenkredit</option>
+                                    <option value="Leonardo da Vinci">Leonardo da Vinci</option>
+                                    <option value="Stipendium">Stipendium</option>
+                                    <option value="Eigenfinanzierung">Eigenfinanzierung</option>
+                                    <option value="Sonstiges">Sonstiges</option>
+                                    <option value="Stipendienprogramm">Stipendienprogramm</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Financial Aid Amount</label>
+                                <input name="financial_aid_amount" type="text">
+                            </div>
+                        </div>
+
+                        <!-- Courses Tab -->
+                        <div id="courses-tab" class="form-tab-content">
+                            <div class="form-group">
+                                <label style="display: flex; justify-content: space-between; align-items: center;">
+                                    <span>Courses</span>
+                                    <button type="button" id="add-course-btn" class="btn" style="padding: 8px 20px; font-size: 14px;">+ Add Course</button>
+                                </label>
+                                <div id="courses-container">
+                                    <div class="course-entry" style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+                                        <div class="form-row">
+                                            <div class="form-group">
+                                                <label>Course Title *</label>
+                                                <input type="text" name="course_title_0">
+                                            </div>
+                                            <div class="form-group">
+                                                <label>ECTS</label>
+                                                <input type="number" name="course_ects_0" min="0" step="0.5">
+                                            </div>
+                                        </div>
+                                        <div class="form-row">
+                                            <div class="form-group">
+                                                <label>Responsible Person</label>
+                                                <input type="text" name="course_responsible_person_0">
+                                            </div>
+                                            <div class="form-group">
+                                                <label>Link to the course</label>
+                                                <input type="url" name="course_link_0">
+                                            </div>
+                                        </div>
+                                        <div class="form-row">
+                                            <div class="form-group">
+                                                <label>Prüfungsleistung (in English)</label>
+                                                <input type="text" name="course_exam_type_0">
+                                            </div>
+                                            <div class="form-group">
+                                                <label>Difficulty (1-5)</label>
+                                                <select name="course_difficulty_0">
+                                                    <option value="">Select...</option>
+                                                    <option value="5">5 - Excellent</option>
+                                                    <option value="4">4 - Very Good</option>
+                                                    <option value="3">3 - Good</option>
+                                                    <option value="2">2 - Satisfactory</option>
+                                                    <option value="1">1 - Sufficient</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label>Course Description</label>
+                                            <textarea name="course_description_0" rows="2"></textarea>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Housing Tab -->
+                        <div id="housing-tab" class="form-tab-content">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Type of Housing *</label>
+                                    <select name="housing_type">
+                                        <option value="">Select...</option>
+                                        <option value="Studentenwohnheim Uni">Studentenwohnheim Uni</option>
+                                        <option value="Studentenwohnheim Privat">Studentenwohnheim Privat</option>
+                                        <option value="WG">WG</option>
+                                        <option value="Privat_Familie">Privat_Familie</option>
+                                        <option value="Einzelzimmer">Einzelzimmer</option>
+                                        <option value="Mietwohnung">Mietwohnung</option>
+                                        <option value="Betriebswohnung">Betriebswohnung</option>
+                                        <option value="Jugendherberge">Jugendherberge</option>
+                                        <option value="Pension">Pension</option>
+                                        <option value="Sonstiges">Sonstiges</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>Link to Housing</label>
+                                <input name="housing_link" type="url">
+                            </div>
+                            <div class="form-group">
+                                <label>Housing Quality Rating (1-5)</label>
+                                <select name="housing_quality">
+                                    <option value="">Select...</option>
+                                    <option value="5">5 - Sehr empfehlenswert</option>
+                                    <option value="4">4 - gut</option>
+                                    <option value="3">3 - mittelmäßig</option>
+                                    <option value="2">2 - gerade noch ertragbar </option>
+                                    <option value="1">1 - nicht empfehlenswert </option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Housing Cost</label>
+                                <input name="housing_cost" type="number" min="0">
+                            </div>
+                            <div class="form-group">
+                                <label>Comments on how to find housing (add links)</label>
+                                <textarea name="housing_comments" rows="3"></textarea>
+                            </div>
+                        </div>
+
+                        <!-- Visa Tab -->
+                        <div id="visa-tab" class="form-tab-content">
+                            <div class="form-group">
+                                <label><input type="checkbox" id="visa-needed" name="visa_needed"> Visa needed</label>
+                            </div>
+                            <div id="visa-details" style="display: none;">
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label>Cost</label>
+                                        <input name="visa_cost" type="number" min="0">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Botschaft</label>
+                                        <input name="visa_embassy" type="text">
+                                    </div>
+                                </div>
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label>Ort der Botschaft</label>
+                                        <input name="visa_embassy_location" type="text">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Beantragungszeit</label>
+                                        <input name="visa_application_time" type="text">
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label>Bemerkungen</label>
+                                    <textarea name="visa_comments" rows="3"></textarea>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Vaccination Tab -->
+                        <div id="vaccination-tab" class="form-tab-content">
+                            <div class="form-group">
+                                <label style="display: flex; justify-content: space-between; align-items: center;">
+                                    <span>Vaccinations</span>
+                                    <button type="button" id="add-vaccination-btn" class="btn" style="padding: 8px 20px; font-size: 14px;">+ Add Vaccination</button>
+                                </label>
+                                <div id="vaccinations-container">
+                                    <div class="vaccination-entry" style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+                                        <div class="form-row">
+                                            <div class="form-group">
+                                                <label>Which vaccination</label>
+                                                <input name="vaccination_which_0" type="text">
+                                            </div>
+                                            <div class="form-group">
+                                                <label>Costs</label>
+                                                <input name="vaccination_costs_0" type="number" min="0">
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label>Comments (does the Health insurance pay)</label>
+                                            <textarea name="vaccination_comments_0" rows="3"></textarea>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                     
-                    <div class="form-group">
-                        <label>General Comments</label>
-                        <textarea name="general_comments"></textarea>
-                    </div>
-                    
-                    <button type="submit" class="btn">Submit Experience</button>
+                    <button type="submit" id="study-form-submit-btn" class="btn">Submit Experience</button>
                 </form>
             </div>
             
@@ -381,18 +380,31 @@
                 <form id="internship-form">
                     <div class="form-row">
                         <div class="form-group">
+                            <label>Name *</label>
+                            <input name="name" type="text" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Contact E-Mail *</label>
+                            <input name="contact_email" type="email" required>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
                             <label>Country *</label>
-                            <input type="text" name="country" required>
+                            <input type="text" name="country" list="countries" required>
                         </div>
                         <div class="form-group">
                             <label>City *</label>
-                            <input type="text" name="city" required>
+                            <input type="text" name="city" list="internship-cities" required>
+                            <datalist id="internship-cities"></datalist>
                         </div>
                     </div>
                     
                     <div class="form-group">
                         <label>Company/Organization *</label>
-                        <input type="text" name="company_organization" required>
+                        <input type="text" name="company_organization" list="internship-institutions" required>
+                        <datalist id="internship-institutions"></datalist>
                     </div>
                     
                     <div class="form-group">
@@ -402,79 +414,40 @@
                     
                     <div class="form-row">
                         <div class="form-group">
-                            <label>Living Cost (EUR) *</label>
-                            <input type="number" name="living_cost" step="0.01" min="0" required>
-                        </div>
-                        <div class="form-group">
-                            <label>Total Cost (EUR) *</label>
-                            <input type="number" name="total_cost" step="0.01" min="0" required>
+                            <label>Living Cost (EUR)</label>
+                            <input type="number" name="living_cost" step="1" min="0">
                         </div>
                         <div class="form-group">
                             <label>Monthly Stipend (EUR)</label>
-                            <input type="number" name="stipend_amount" step="0.01" min="0">
+                            <input type="number" name="stipend_amount" step="1" min="0">
                         </div>
                     </div>
                     
                     <div class="form-group">
                         <label>Financing Methods</label>
-                        <input type="text" name="financing_methods">
+                        <input type="text" name="financing_methods" placeholder="e.g., Company stipend, Erasmus+ internship grant">
                     </div>
                     
                     <div class="form-group">
                         <label>Work Description</label>
-                        <textarea name="work_description"></textarea>
+                        <textarea name="work_description" placeholder="What did you work on?"></textarea>
                     </div>
                     
                     <div class="form-group">
                         <label>Skills Learned</label>
-                        <textarea name="skills_learned"></textarea>
-                    </div>
-                    
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label>Work Experience Rating (1-5) *</label>
-                            <select name="rating_work_experience" required>
-                                <option value="">Select...</option>
-                                <option value="5">5 - Excellent</option>
-                                <option value="4">4 - Good</option>
-                                <option value="3">3 - Average</option>
-                                <option value="2">2 - Below Average</option>
-                                <option value="1">1 - Poor</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label>Social Life Rating (1-5) *</label>
-                            <select name="rating_social_life" required>
-                                <option value="">Select...</option>
-                                <option value="5">5 - Excellent</option>
-                                <option value="4">4 - Good</option>
-                                <option value="3">3 - Average</option>
-                                <option value="2">2 - Below Average</option>
-                                <option value="1">1 - Poor</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label>Cost of Living Rating (1-5) *</label>
-                            <select name="rating_cost_of_living" required>
-                                <option value="">Select...</option>
-                                <option value="5">5 - Very Affordable</option>
-                                <option value="4">4 - Affordable</option>
-                                <option value="3">3 - Moderate</option>
-                                <option value="2">2 - Expensive</option>
-                                <option value="1">1 - Very Expensive</option>
-                            </select>
-                        </div>
+                        <textarea name="skills_learned" placeholder="What skills did you develop?"></textarea>
                     </div>
                     
                     <div class="form-group">
                         <label>Application Tips</label>
-                        <textarea name="application_tips"></textarea>
+                        <textarea name="application_tips" placeholder="Tips for future applicants..."></textarea>
                     </div>
                     
                     <div class="form-group">
                         <label>General Comments</label>
-                        <textarea name="general_comments"></textarea>
+                        <textarea name="general_comments" placeholder="Your overall thoughts..."></textarea>
                     </div>
+                    
                     
                     <button type="submit" class="btn">Submit Experience</button>
                 </form>
@@ -482,343 +455,8 @@
         </div>
     </div>
 
-    <script>
-        let db;
-        
-        // Initialize SQL.js
-        async function initDB() {
-            const SQL = await initSqlJs({
-                locateFile: file => `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/${file}`
-            });
-
-            db = new SQL.Database();
-            
-            // Create empty tables (will be populated when SQL file is loaded)
-            db.run(`
-                CREATE TABLE IF NOT EXISTS study_abroad (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    country TEXT NOT NULL,
-                    city TEXT NOT NULL,
-                    institution TEXT NOT NULL,
-                    duration TEXT NOT NULL,
-                    tuition_cost DECIMAL(10,2),
-                    living_cost DECIMAL(10,2),
-                    total_cost DECIMAL(10,2),
-                    financing_methods TEXT,
-                    courses_taken TEXT,
-                    course_description TEXT,
-                    rating_academics INTEGER,
-                    rating_social_life INTEGER,
-                    rating_cost_of_living INTEGER,
-                    application_tips TEXT,
-                    general_comments TEXT,
-                    submission_date DATE DEFAULT CURRENT_DATE
-                );
-                
-                CREATE TABLE IF NOT EXISTS internship_abroad (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    country TEXT NOT NULL,
-                    city TEXT NOT NULL,
-                    company_organization TEXT NOT NULL,
-                    duration TEXT NOT NULL,
-                    living_cost DECIMAL(10,2),
-                    total_cost DECIMAL(10,2),
-                    stipend_amount DECIMAL(10,2),
-                    financing_methods TEXT,
-                    work_description TEXT,
-                    skills_learned TEXT,
-                    rating_work_experience INTEGER,
-                    rating_social_life INTEGER,
-                    rating_cost_of_living INTEGER,
-                    application_tips TEXT,
-                    general_comments TEXT,
-                    submission_date DATE DEFAULT CURRENT_DATE
-                );
-            `);
-        }
-        
-        // Load SQL file
-        async function loadSQLFile(file) {
-            const reader = new FileReader();
-            reader.onload = async function(e) {
-                const sqlContent = e.target.result;
-                
-                try {
-                    // Execute the SQL commands
-                    db.run(sqlContent);
-                    
-                    document.getElementById('upload-status').textContent = '✅ Database loaded successfully!';
-                    document.getElementById('upload-status').style.color = '#4caf50';
-                    
-                    // Refresh displays
-                    displayStudyExperiences();
-                    displayInternshipExperiences();
-                } catch (error) {
-                    document.getElementById('upload-status').textContent = '❌ Error loading database: ' + error.message;
-                    document.getElementById('upload-status').style.color = '#f44336';
-                }
-            };
-            reader.readAsText(file);
-        }
-        
-        function switchTab(tabId) {
-            // Update tab buttons
-            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
-            event.target.classList.add('active');
-            
-            // Update views
-            document.querySelectorAll('.view').forEach(view => view.classList.remove('active'));
-            document.getElementById(tabId).classList.add('active');
-        }
-        
-        function getStars(rating) {
-            return '★'.repeat(rating) + '☆'.repeat(5 - rating);
-        }
-        
-        function displayStudyExperiences(filterCountry = '', filterInstitution = '') {
-            let query = 'SELECT * FROM study_abroad WHERE 1=1';
-            const params = [];
-            
-            if (filterCountry) {
-                query += ' AND country LIKE ?';
-                params.push('%' + filterCountry + '%');
-            }
-            if (filterInstitution) {
-                query += ' AND institution LIKE ?';
-                params.push('%' + filterInstitution + '%');
-            }
-            
-            query += ' ORDER BY id DESC';
-            
-            const stmt = db.prepare(query);
-            stmt.bind(params);
-            
-            let html = '';
-            let count = 0;
-            
-            while (stmt.step()) {
-                const row = stmt.getAsObject();
-                count++;
-                html += `
-                    <div class="experience-card">
-                        <h3>${row.institution} - ${row.city}, ${row.country}</h3>
-                        <div class="experience-meta">
-                            <span><strong>Duration:</strong> ${row.duration}</span>
-                            <span><strong>Total Cost:</strong> €${row.total_cost}</span>
-                        </div>
-                        <div class="ratings">
-                            <div class="rating">
-                                <span>Academics:</span>
-                                <span class="stars">${getStars(row.rating_academics)}</span>
-                            </div>
-                            <div class="rating">
-                                <span>Social Life:</span>
-                                <span class="stars">${getStars(row.rating_social_life)}</span>
-                            </div>
-                            <div class="rating">
-                                <span>Affordability:</span>
-                                <span class="stars">${getStars(row.rating_cost_of_living)}</span>
-                            </div>
-                        </div>
-                        ${row.courses_taken ? `<p><strong>Courses:</strong> ${row.courses_taken}</p>` : ''}
-                        ${row.course_description ? `<p><strong>Experience:</strong> ${row.course_description}</p>` : ''}
-                        ${row.financing_methods ? `<p><strong>Financing:</strong> ${row.financing_methods}</p>` : ''}
-                        ${row.application_tips ? `<p><strong>Tips:</strong> ${row.application_tips}</p>` : ''}
-                        ${row.general_comments ? `<p><strong>Comments:</strong> ${row.general_comments}</p>` : ''}
-                    </div>
-                `;
-            }
-            
-            stmt.free();
-            
-            if (count === 0) {
-                html = '<div class="no-results">No experiences found. Try adjusting your filters.</div>';
-            }
-            
-            document.getElementById('study-results').innerHTML = html;
-        }
-        
-        function displayInternshipExperiences(filterCountry = '', filterCompany = '') {
-            let query = 'SELECT * FROM internship_abroad WHERE 1=1';
-            const params = [];
-            
-            if (filterCountry) {
-                query += ' AND country LIKE ?';
-                params.push('%' + filterCountry + '%');
-            }
-            if (filterCompany) {
-                query += ' AND company_organization LIKE ?';
-                params.push('%' + filterCompany + '%');
-            }
-            
-            query += ' ORDER BY id DESC';
-            
-            const stmt = db.prepare(query);
-            stmt.bind(params);
-            
-            let html = '';
-            let count = 0;
-            
-            while (stmt.step()) {
-                const row = stmt.getAsObject();
-                count++;
-                html += `
-                    <div class="experience-card">
-                        <h3>${row.company_organization} - ${row.city}, ${row.country}</h3>
-                        <div class="experience-meta">
-                            <span><strong>Duration:</strong> ${row.duration}</span>
-                            <span><strong>Total Cost:</strong> €${row.total_cost}</span>
-                            ${row.stipend_amount ? `<span><strong>Stipend:</strong> €${row.stipend_amount}/month</span>` : ''}
-                        </div>
-                        <div class="ratings">
-                            <div class="rating">
-                                <span>Work Experience:</span>
-                                <span class="stars">${getStars(row.rating_work_experience)}</span>
-                            </div>
-                            <div class="rating">
-                                <span>Social Life:</span>
-                                <span class="stars">${getStars(row.rating_social_life)}</span>
-                            </div>
-                            <div class="rating">
-                                <span>Affordability:</span>
-                                <span class="stars">${getStars(row.rating_cost_of_living)}</span>
-                            </div>
-                        </div>
-                        ${row.work_description ? `<p><strong>Work:</strong> ${row.work_description}</p>` : ''}
-                        ${row.skills_learned ? `<p><strong>Skills Learned:</strong> ${row.skills_learned}</p>` : ''}
-                        ${row.financing_methods ? `<p><strong>Financing:</strong> ${row.financing_methods}</p>` : ''}
-                        ${row.application_tips ? `<p><strong>Tips:</strong> ${row.application_tips}</p>` : ''}
-                        ${row.general_comments ? `<p><strong>Comments:</strong> ${row.general_comments}</p>` : ''}
-                    </div>
-                `;
-            }
-            
-            stmt.free();
-            
-            if (count === 0) {
-                html = '<div class="no-results">No experiences found. Try adjusting your filters.</div>';
-            }
-            
-            document.getElementById('internship-results').innerHTML = html;
-        }
-        
-        // Filter handlers
-        document.addEventListener('DOMContentLoaded', () => {
-            initDB();
-            
-            // SQL file upload handler
-            document.getElementById('sql-upload').addEventListener('change', (e) => {
-                const file = e.target.files[0];
-                if (file) {
-                    loadSQLFile(file);
-                }
-            });
-            
-            document.getElementById('filter-study-country').addEventListener('input', (e) => {
-                const country = e.target.value;
-                const institution = document.getElementById('filter-study-institution').value;
-                displayStudyExperiences(country, institution);
-            });
-            
-            document.getElementById('filter-study-institution').addEventListener('input', (e) => {
-                const country = document.getElementById('filter-study-country').value;
-                const institution = e.target.value;
-                displayStudyExperiences(country, institution);
-            });
-            
-            document.getElementById('filter-internship-country').addEventListener('input', (e) => {
-                const country = e.target.value;
-                const company = document.getElementById('filter-internship-company').value;
-                displayInternshipExperiences(country, company);
-            });
-            
-            document.getElementById('filter-internship-company').addEventListener('input', (e) => {
-                const country = document.getElementById('filter-internship-country').value;
-                const company = e.target.value;
-                displayInternshipExperiences(country, company);
-            });
-            
-            // Study form submission
-            document.getElementById('study-form').addEventListener('submit', (e) => {
-                e.preventDefault();
-                const formData = new FormData(e.target);
-                
-                const columns = [];
-                const values = [];
-                const placeholders = [];
-                
-                for (let [key, value] of formData.entries()) {
-                    if (value) {
-                        columns.push(key);
-                        values.push(value);
-                        placeholders.push('?');
-                    }
-                }
-                
-                const query = `INSERT INTO study_abroad (${columns.join(', ')}) VALUES (${placeholders.join(', ')})`;
-                db.run(query, values);
-                
-                // Show success message
-                const successMsg = document.getElementById('study-success');
-                successMsg.style.display = 'block';
-                setTimeout(() => successMsg.style.display = 'none', 3000);
-                
-                // Reset form and refresh display
-                e.target.reset();
-                displayStudyExperiences();
-                
-                // Switch to browse tab
-                setTimeout(() => switchTab('browse-study'), 1500);
-            });
-            
-            // Internship form submission
-            document.getElementById('internship-form').addEventListener('submit', (e) => {
-                e.preventDefault();
-                const formData = new FormData(e.target);
-                
-                const columns = [];
-                const values = [];
-                const placeholders = [];
-                
-                for (let [key, value] of formData.entries()) {
-                    if (value) {
-                        columns.push(key);
-                        values.push(value);
-                        placeholders.push('?');
-                    }
-                }
-                
-                const query = `INSERT INTO internship_abroad (${columns.join(', ')}) VALUES (${placeholders.join(', ')})`;
-                db.run(query, values);
-                
-                // Show success message
-                const successMsg = document.getElementById('internship-success');
-                successMsg.style.display = 'block';
-                setTimeout(() => successMsg.style.display = 'none', 3000);
-                
-                // Reset form and refresh display
-                e.target.reset();
-                displayInternshipExperiences();
-                
-                // Switch to browse tab
-                setTimeout(() => switchTab('browse-internship'), 1500);
-            });
-            
-            document.getElementById('download-db').addEventListener('click', () => {
-    if (!db) return;
-    const binaryArray = db.export();
-    const blob = new Blob([binaryArray], { type: 'application/octet-stream' });
-    const url = URL.createObjectURL(blob);
-
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'abroad_experiences.sqlite';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-});
-        });
-    </script>
+    <script src="countries.js"></script>
+    <script src="study_class_years.js"></script>
+    <script src="main.js"></script>
 </body>
 </html>
