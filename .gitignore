@@ -1,0 +1,4 @@
+/databases*
+*.sqlite
+*.log
+*.png
