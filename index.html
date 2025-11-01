@@ -484,6 +484,10 @@
             </select>
             <input type="text" id="country-filter" placeholder="Enter country..." disabled>
             <input type="text" id="city-filter" placeholder="Enter city..." disabled>
+            <div class="view-toggle">
+                <input type="checkbox" id="view-toggle-checkbox">
+                <label for="view-toggle-checkbox">Expanded View</label>
+            </div>
         </div>
 
         <div id="filter-summary" class="filter-summary"></div>
@@ -493,6 +497,7 @@
 
     <script src="https://cdn.jsdelivr.net/npm/sql.js@1.6.2/dist/sql-wasm.js"></script>
     <script>
+        document.addEventListener('DOMContentLoaded', function() {
         const dbUpload = document.getElementById('db-upload');
         const experiencesDiv = document.getElementById('experiences');
         const filtersDiv = document.getElementById('filters');
@@ -501,6 +506,7 @@
         const countryFilter = document.getElementById('country-filter');
         const cityFilter = document.getElementById('city-filter');
         const filterSummary = document.getElementById('filter-summary');
+        const viewToggleCheckbox = document.getElementById('view-toggle-checkbox');
 
         let db;
         let allExperiences = [];
@@ -520,7 +526,7 @@
                     countryFilter.disabled = false;
                     cityFilter.disabled = false;
                 } catch (error) {
-                    console.error(error);
+                    console.error("Error loading database:", error);
                     experiencesDiv.innerHTML = `<p class="error">Error loading database. Make sure it's a valid migrated SQLite file.</p>`;
                 }
             }
@@ -538,6 +544,7 @@
         continentFilter.addEventListener('change', filterAndRenderExperiences);
         countryFilter.addEventListener('input', filterAndRenderExperiences);
         cityFilter.addEventListener('input', filterAndRenderExperiences);
+        viewToggleCheckbox.addEventListener('change', filterAndRenderExperiences);
 
         function fetchExperiences(db) {
             const studyQuery = `
@@ -562,6 +569,7 @@
                 });
             }
             if (internshipResults.length > 0) {
+
                 internshipResults[0].values.forEach(row => {
                     let obj = { type: 'internship' };
                     internshipResults[0].columns.forEach((col, i) => obj[col] = row[i]);
@@ -660,6 +668,7 @@
             return '★'.repeat(starsCount) + '☆'.repeat(5 - starsCount);
         }
 
+
         function renderExperiences(experiences) {
             let summaryText = `Showing ${experiences.length} of ${allExperiences.length} experiences.`;
 
@@ -695,18 +704,34 @@
                 return;
             }
 
+            experiences.sort((a, b) => a.country.localeCompare(b.country));
+
+            let currentCountry = '';
+            const isExpandedView = viewToggleCheckbox.checked;
+
             experiences.forEach(exp => {
+                if (exp.country !== currentCountry) {
+                    currentCountry = exp.country;
+                    const countryHeader = document.createElement('h3');
+                    countryHeader.textContent = currentCountry;
+                    countryHeader.className = 'country-heading';
+                    experiencesDiv.appendChild(countryHeader);
+                }
+
                 const expDiv = document.createElement('div');
                 expDiv.className = `experience-card ${exp.type}-card`;
                 const locationText = exp.city && exp.country ? `${exp.city}, ${exp.country}` : exp.country || exp.city || '';
                 
                 expDiv.innerHTML = `
                     <div class="card-header">
-                        <h2>${exp.type === 'study' ? `${exp.university_name}, ` : `${exp.organisation_name}, `}</h2>
-                        <span class="card-location">${locationText}</span>
-                        <button class="toggle-btn">+</button>
+                        <h2>${exp.type === 'study' ? `${exp.university_name}, ` : `${exp.organisation_name}, `}
+                        <span class="card-location">${locationText}</span> </h2> 
+                        <div> 
+                            <span class="indicator-batch"> ${exp.type === 'study' ? `study` : `internship`} </span>
+                            <button class="toggle-btn">${isExpandedView ? '-' : '+'}</button>
+                        </div>
                     </div>
-                    <div class="card-body" style="display: none;">
+                    <div class="card-body" style="display: ${isExpandedView ? 'block' : 'none'};">
                         <div class="nested-data"></div>
                     </div>
                 `;
@@ -716,6 +741,11 @@
                 const cardBody = expDiv.querySelector('.card-body');
                 const nestedDataContainer = expDiv.querySelector('.nested-data');
 
+                if (isExpandedView) {
+                    const nestedData = fetchNestedData(exp.id, exp.type);
+                    renderNestedData(nestedDataContainer, exp, nestedData, false);
+                }
+
                 const header = expDiv.querySelector('.card-header');
                 header.addEventListener('click', () => {
                     const isVisible = cardBody.style.display === 'block';
@@ -724,13 +754,13 @@
 
                     if (!isVisible && !nestedDataContainer.innerHTML) {
                         const nestedData = fetchNestedData(exp.id, exp.type);
-                        renderNestedData(nestedDataContainer, exp, nestedData);
+                        renderNestedData(nestedDataContainer, exp, nestedData, false);
                     }
                 });
             });
         }
 
-        function renderNestedData(container, exp, nestedData) {
+        function renderNestedData(container, exp, nestedData, isFullyExpanded) {
             let html = '';
 
             if (exp.type === 'study') {
@@ -782,77 +812,97 @@
                          </div>`;
             }
 
-            if (nestedData.finances && nestedData.finances.values.length > 0) {
-                html += '<div class="detail-section"><h3>Finances</h3>';
-                nestedData.finances.values.forEach(finance => {
-                    html += `<div class="nested-item">
-                                <dl>
-                                    <dt>Method:</dt><dd>${finance[3]}</dd>
-                                    <dt>${finance[5] ? 'Salary' : 'Amount'}:</dt><dd>${finance[5] ? finance[6] : finance[4]}</dd>
-                                    ${finance[7] ? `<dt>Finance Institution:</dt><dd>${finance[7]}</dd>` : ''}
-                                    ${finance[11] ? `<dt>Comments:</dt><dd>${finance[11]}</dd>` : ''}
-                                </dl>
-                            </div>`;
-                });
-                html += '</div>';
-            }
-
-            if (nestedData.housing && nestedData.housing.values.length > 0) {
-                html += '<div class="detail-section"><h3>Housing</h3>';
-                nestedData.housing.values.forEach(housing => {
-                    html += `<div class="nested-item">
-                                <dl>
-                                    <dt>Housing Quality:</dt><dd>${getStars(housing[4])} (${housing[4]}/5)</dd>
-                                    <dt>Type:</dt><dd>${housing[3]}</dd>
-                                    <dt>Costs:</dt><dd>${housing[8]}</dd>
-                                    <dt>Website:</dt><dd><a href="${housing[5]}" target="_blank">${housing[5]}</a></dd>
-                                    <dt>Email:</dt><dd><a href="mailto:${housing[6]}">${housing[6]}</a></dd>
-                                    <dt>Phone:</dt><dd><a href="tel:${housing[7]}">${housing[7]}</a></dd>
-                                    <dt>Comments:</dt><dd>${housing[9]}</dd>
-                                </dl>
-                            </div>`;
-                });
-                html += '</div>';
-            }
-
-            if (nestedData.visa && nestedData.visa.values.length > 0) {
-                html += '<div class="detail-section"><h3>Entry Regulations</h3>';
-                nestedData.visa.values.forEach(visa => {
-                    if (visa[3]) { // visa_needed
+            if (isFullyExpanded) {
+                if (nestedData.finances && nestedData.finances.values.length > 0) {
+                    html += '<div class="detail-section"><h3>Finances</h3>';
+                    nestedData.finances.values.forEach(finance => {
                         html += `<div class="nested-item">
                                     <dl>
-                                        <dt>Cost:</dt><dd>${visa[4]}</dd>
-                                        <dt>Embassy:</dt><dd>${visa[6]} (${visa[7]})</dd>
-                                        <dt>Application Time:</dt><dd>${visa[5]}</dd>
-                                        <dt>Website:</dt><dd><a href="${visa[8]}" target="_blank">${visa[8]}</a></dd>
-                                        <dt>Comments:</dt><dd>${visa[11]}</dd>
+                                        <dt>Method:</dt><dd>${finance[3]}</dd>
+                                        <dt>${finance[5] ? 'Salary' : 'Amount'}:</dt><dd>${finance[5] ? finance[6] : finance[4]}</dd>
+                                        ${finance[7] ? `<dt>Finance Institution:</dt><dd>${finance[7]}</dd>` : ''}
+                                        ${finance[11] ? `<dt>Comments:</dt><dd>${finance[11]}</dd>` : ''}
                                     </dl>
                                 </div>`;
-                    }
-                });
-                html += '</div>';
-            }
+                    });
+                    html += '</div>';
+                }
 
-            if (nestedData.vaccinations && nestedData.vaccinations.values.length > 0) {
-                html += '<div class="detail-section"><h3>Vaccinations</h3>';
-                nestedData.vaccinations.values.forEach(vacc => {
-                    html += `<div class="nested-item">
-                                <dl>
-                                    <dt>Type:</dt><dd>${vacc[3]}</dd>
-                                    <dt>Costs:</dt><dd>${vacc[4]}</dd>
-                                    <dt>Institution:</dt><dd>${vacc[5]}</dd>
-                                    <dt>Address:</dt><dd>${vacc[6]}, ${vacc[7]} ${vacc[8]}</dd>
-                                    <dt>Email:</dt><dd><a href="mailto:${vacc[10]}">${vacc[10]}</a></dd>
-                                    <dt>Phone:</dt><dd><a href="tel:${vacc[9]}">${vacc[9]}</a></dd>
-                                    <dt>Comments:</dt><dd>${vacc[11]}</dd>
-                                </dl>
-                             </div>`;
-                });
-                html += '</div>';
+                if (nestedData.housing && nestedData.housing.values.length > 0) {
+                    html += '<div class="detail-section"><h3>Housing</h3>';
+                    nestedData.housing.values.forEach(housing => {
+                        html += `<div class="nested-item">
+                                    <dl>
+                                        <dt>Housing Quality:</dt><dd>${getStars(housing[4])} (${housing[4]}/5)</dd>
+                                        <dt>Type:</dt><dd>${housing[3]}</dd>
+                                        <dt>Costs:</dt><dd>${housing[8]}</dd>
+                                        <dt>Website:</dt><dd><a href="${housing[5]}" target="_blank">${housing[5]}</a></dd>
+                                        <dt>Email:</dt><dd><a href="mailto:${housing[6]}">${housing[6]}</a></dd>
+                                        <dt>Phone:</dt><dd><a href="tel:${housing[7]}">${housing[7]}</a></dd>
+                                        <dt>Comments:</dt><dd>${housing[9]}</dd>
+                                    </dl>
+                                </div>`;
+                    });
+                    html += '</div>';
+                }
+
+                if (nestedData.visa && nestedData.visa.values.length > 0) {
+                    html += '<div class="detail-section"><h3>Entry Regulations</h3>';
+                    nestedData.visa.values.forEach(visa => {
+                        if (visa[3]) { // visa_needed
+                            html += `<div class="nested-item">
+                                        <dl>
+                                            <dt>Cost:</dt><dd>${visa[4]}</dd>
+                                            <dt>Embassy:</dt><dd>${visa[6]} (${visa[7]})</dd>
+                                            <dt>Application Time:</dt><dd>${visa[5]}</dd>
+                                            <dt>Website:</dt><dd><a href="${visa[8]}" target="_blank">${visa[8]}</a></dd>
+                                            <dt>Comments:</dt><dd>${visa[11]}</dd>
+                                        </dl>
+                                    </div>`;
+                        }
+                    });
+                    html += '</div>';
+                }
+
+                if (nestedData.vaccinations && nestedData.vaccinations.values.length > 0) {
+                    html += '<div class="detail-section"><h3>Vaccinations</h3>';
+                    nestedData.vaccinations.values.forEach(vacc => {
+                        html += `<div class="nested-item">
+                                    <dl>
+                                        <dt>Type:</dt><dd>${vacc[3]}</dd>
+                                        <dt>Costs:</dt><dd>${vacc[4]}</dd>
+                                        <dt>Institution:</dt><dd>${vacc[5]}</dd>
+                                        <dt>Address:</dt><dd>${vacc[6]}, ${vacc[7]} ${vacc[8]}</dd>
+                                        <dt>Email:</dt><dd><a href="mailto:${vacc[10]}">${vacc[10]}</a></dd>
+                                        <dt>Phone:</dt><dd><a href="tel:${vacc[9]}">${vacc[9]}</a></dd>
+                                        <dt>Comments:</dt><dd>${vacc[11]}</dd>
+                                    </dl>
+                                 </div>`;
+                    });
+                    html += '</div>';
+                }
+                html += '<button class="show-less-btn">Show less</button>';
+            } else {
+                html += '<button class="show-more-btn">Show more</button>';
             }
 
             container.innerHTML = html;
+
+            const showMoreBtn = container.querySelector('.show-more-btn');
+            if (showMoreBtn) {
+                showMoreBtn.addEventListener('click', () => {
+                    renderNestedData(container, exp, nestedData, true);
+                });
+            }
+
+            const showLessBtn = container.querySelector('.show-less-btn');
+            if (showLessBtn) {
+                showLessBtn.addEventListener('click', () => {
+                    renderNestedData(container, exp, nestedData, false);
+                });
+            }
         }
+        });
     </script>
 </body>
 </html>
