@@ -3,12 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<<<<<<< HEAD
     <title>Student Abroad Experiences</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/sql-wasm.js"></script>
+=======
+    <title>Abroad Experiences</title>
+>>>>>>> 57503fa (initial state, start manual editing)
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="container">
+<<<<<<< HEAD
         <header>
             <h1>🌍 Student Abroad Experiences</h1>
             <p>Share and discover study abroad & internship experiences</p>
@@ -460,3 +465,364 @@
     <script src="main.js"></script>
 </body>
 </html>
+=======
+        <h1>Abroad Experiences</h1>
+        <p>Upload your migrated .sqlite database to see the experiences.</p>
+        <div class="upload-container">
+            <input type="file" id="db-upload" class="file-input">
+            <label for="db-upload" class="file-label">Choose a file</label>
+        </div>
+
+        <div id="filters" class="filters-container">
+            <div class="type-filter-buttons">
+                <button class="type-btn active" data-value="all">All</button>
+                <button class="type-btn" data-value="study">Study</button>
+                <button class="type-btn" data-value="internship">Internship</button>
+            </div>
+            <select id="continent-filter" disabled>
+                <option value="all">All Continents</option>
+            </select>
+            <input type="text" id="country-filter" placeholder="Enter country..." disabled>
+            <input type="text" id="city-filter" placeholder="Enter city..." disabled>
+        </div>
+
+        <div id="filter-summary" class="filter-summary"></div>
+        <div id="experiences" class="experiences-container"></div>
+
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/sql.js@1.6.2/dist/sql-wasm.js"></script>
+    <script>
+        const dbUpload = document.getElementById('db-upload');
+        const experiencesDiv = document.getElementById('experiences');
+        const filtersDiv = document.getElementById('filters');
+        const typeFilterButtons = document.querySelector('.type-filter-buttons');
+        const continentFilter = document.getElementById('continent-filter');
+        const countryFilter = document.getElementById('country-filter');
+        const cityFilter = document.getElementById('city-filter');
+        const filterSummary = document.getElementById('filter-summary');
+
+        let db;
+        let allExperiences = [];
+        let currentTypeFilter = 'all';
+
+        dbUpload.addEventListener('change', async (event) => {
+            const file = event.target.files[0];
+            if (file) {
+                const fileBuffer = await file.arrayBuffer();
+                try {
+                    const SQL = await initSqlJs({ locateFile: file => `https://cdn.jsdelivr.net/npm/sql.js@1.6.2/dist/${file}` });
+                    db = new SQL.Database(new Uint8Array(fileBuffer));
+                    allExperiences = fetchExperiences(db);
+                    populateFilters(allExperiences);
+                    filterAndRenderExperiences();
+                    continentFilter.disabled = false;
+                    countryFilter.disabled = false;
+                    cityFilter.disabled = false;
+                } catch (error) {
+                    console.error(error);
+                    experiencesDiv.innerHTML = `<p class="error">Error loading database. Make sure it's a valid migrated SQLite file.</p>`;
+                }
+            }
+        });
+
+        typeFilterButtons.addEventListener('click', (e) => {
+            if (e.target.classList.contains('type-btn')) {
+                typeFilterButtons.querySelector('.active').classList.remove('active');
+                e.target.classList.add('active');
+                currentTypeFilter = e.target.dataset.value;
+                filterAndRenderExperiences();
+            }
+        });
+
+        continentFilter.addEventListener('change', filterAndRenderExperiences);
+        countryFilter.addEventListener('input', filterAndRenderExperiences);
+        cityFilter.addEventListener('input', filterAndRenderExperiences);
+
+        function fetchExperiences(db) {
+            const studyQuery = `
+                SELECT *, uni.name as university_name FROM study_experiences se
+                LEFT JOIN users u ON se.user_id = u.id
+                LEFT JOIN universities uni ON se.university_id = uni.id
+            `;
+            const internshipQuery = `
+                SELECT *, c.name as company_name FROM internship_experiences ie
+                LEFT JOIN users u ON ie.user_id = u.id
+                LEFT JOIN companies c ON ie.company_id = c.id
+            `;
+            const studyResults = db.exec(studyQuery);
+            const internshipResults = db.exec(internshipQuery);
+
+            const experiences = [];
+            if (studyResults.length > 0) {
+                studyResults[0].values.forEach(row => {
+                    let obj = { type: 'study' };
+                    studyResults[0].columns.forEach((col, i) => obj[col] = row[i]);
+                    experiences.push(obj);
+                });
+            }
+            if (internshipResults.length > 0) {
+                internshipResults[0].values.forEach(row => {
+                    let obj = { type: 'internship' };
+                    internshipResults[0].columns.forEach((col, i) => obj[col] = row[i]);
+                    experiences.push(obj);
+                });
+            }
+            return experiences;
+        }
+
+        function populateFilters(experiences) {
+            const continents = new Set();
+            experiences.forEach(exp => {
+                if(exp.continent) continents.add(exp.continent);
+            });
+
+            continentFilter.innerHTML = '<option value="all">All Continents</option>';
+            continents.forEach(continent => {
+                const option = document.createElement('option');
+                option.value = continent;
+                option.textContent = continent;
+                continentFilter.appendChild(option);
+            });
+        }
+
+        function filterAndRenderExperiences() {
+            const continent = continentFilter.value;
+            const country = countryFilter.value.toLowerCase();
+            const city = cityFilter.value.toLowerCase();
+
+            const filteredExperiences = allExperiences.filter(exp => {
+                const countryMatch = !country || (exp.country && exp.country.toLowerCase().includes(country));
+                const cityMatch = !city || (exp.city && exp.city.toLowerCase().includes(city));
+                return (currentTypeFilter === 'all' || exp.type === currentTypeFilter) &&
+                       (continent === 'all' || exp.continent === continent) &&
+                       countryMatch && cityMatch;
+            });
+
+            renderExperiences(filteredExperiences);
+        }
+
+        function fetchNestedData(experienceId, type) {
+            if (!db) return {};
+            let nestedData = {};
+            const idColumn = type === 'study' ? 'study_experience_id' : 'internship_experience_id';
+            
+            if (type === 'study') {
+                const coursesResult = db.exec(`SELECT * FROM courses WHERE study_experience_id = ${experienceId}`);
+                nestedData.courses = coursesResult.length > 0 ? coursesResult[0] : { columns: [], values: [] };
+            }
+
+            const financesResult = db.exec(`SELECT * FROM finances WHERE ${idColumn} = ${experienceId}`);
+            nestedData.finances = financesResult.length > 0 ? financesResult[0] : { columns: [], values: [] };
+            const housingResult = db.exec(`SELECT * FROM housings WHERE ${idColumn} = ${experienceId}`);
+            nestedData.housing = housingResult.length > 0 ? housingResult[0] : { columns: [], values: [] };
+            const visaResult = db.exec(`SELECT * FROM visas WHERE ${idColumn} = ${experienceId}`);
+            nestedData.visa = visaResult.length > 0 ? visaResult[0] : { columns: [], values: [] };
+            const vaccinationsResult = db.exec(`SELECT * FROM vaccinations WHERE ${idColumn} = ${experienceId}`);
+            nestedData.vaccinations = vaccinationsResult.length > 0 ? vaccinationsResult[0] : { columns: [], values: [] };
+            
+            return nestedData;
+        }
+
+        function getDifficultyClass(difficulty) {
+            if (difficulty <= 2) return 'difficulty-green';
+            if (difficulty <= 4) return 'difficulty-yellow';
+            return 'difficulty-red';
+        }
+
+        function getStars(stars) {
+            if (!stars) return '';
+            const numRating = parseInt(stars);
+            const starsCount = Math.min(5, Math.max(0, numRating));
+            return '★'.repeat(starsCount) + '☆'.repeat(5 - starsCount);
+        }
+
+        function renderExperiences(experiences) {
+            let summaryText = `Showing ${experiences.length} of ${allExperiences.length} experiences.`;
+
+            const studyCount = experiences.filter(exp => exp.type === 'study').length;
+            const internshipCount = experiences.filter(exp => exp.type === 'internship').length;
+            if (studyCount > 0 || internshipCount > 0) {
+                summaryText += ` (Study: ${studyCount}, Internship: ${internshipCount})`;
+            }
+
+            const selectedContinent = continentFilter.value;
+            if (selectedContinent !== 'all') {
+                const continentCount = experiences.filter(exp => exp.continent === selectedContinent).length;
+                summaryText += ` | Continent: ${selectedContinent} (${continentCount})`;
+            }
+
+            const selectedCountry = countryFilter.value.toLowerCase();
+            if (selectedCountry) {
+                const countryCount = experiences.filter(exp => exp.country && exp.country.toLowerCase().includes(selectedCountry)).length;
+                summaryText += ` | Country: ${countryFilter.value} (${countryCount})`;
+            }
+
+            const selectedCity = cityFilter.value.toLowerCase();
+            if (selectedCity) {
+                const cityCount = experiences.filter(exp => exp.city && exp.city.toLowerCase().includes(selectedCity)).length;
+                summaryText += ` | City: ${cityFilter.value} (${cityCount})`;
+            }
+
+            filterSummary.textContent = summaryText;
+
+            experiencesDiv.innerHTML = '';
+            if (experiences.length === 0) {
+                experiencesDiv.innerHTML = '<p>No experiences match the current filters.</p>';
+                return;
+            }
+
+            experiences.forEach(exp => {
+                const expDiv = document.createElement('div');
+                expDiv.className = `experience-card ${exp.type}-card`;
+                const locationText = exp.city && exp.country ? `${exp.city}, ${exp.country}` : exp.country || exp.city || '';
+                
+                expDiv.innerHTML = `
+                    <div class="card-header">
+                        <h2>${exp.type === 'study' ? `Study at ${exp.university_name}` : `Internship at ${exp.company_name}`}</h2>
+                        <span class="card-location">${locationText}</span>
+                        <button class="toggle-btn">+</button>
+                    </div>
+                    <div class="card-body" style="display: none;">
+                        <div class="nested-data"></div>
+                    </div>
+                `;
+                experiencesDiv.appendChild(expDiv);
+
+                const toggleBtn = expDiv.querySelector('.toggle-btn');
+                const cardBody = expDiv.querySelector('.card-body');
+                const nestedDataContainer = expDiv.querySelector('.nested-data');
+
+                const header = expDiv.querySelector('.card-header');
+                header.addEventListener('click', () => {
+                    const isVisible = cardBody.style.display === 'block';
+                    cardBody.style.display = isVisible ? 'none' : 'block';
+                    toggleBtn.textContent = isVisible ? '+' : '-';
+
+                    if (!isVisible && !nestedDataContainer.innerHTML) {
+                        const nestedData = fetchNestedData(exp.id, exp.type);
+                        renderNestedData(nestedDataContainer, exp, nestedData);
+                    }
+                });
+            });
+        }
+
+        function renderNestedData(container, exp, nestedData) {
+            let html = '';
+
+            if (exp.type === 'study') {
+                html += `<div class="detail-section inline-details">
+                            <span><strong>Contact:</strong> ${exp.first_name} ${exp.last_name} (<a href="mailto:${exp.email}">${exp.email}</a>, <a href="tel:${exp.phone}">${exp.phone}</a>)</span>
+                            <span><strong>Study Class:</strong> ${exp.class_year}</span>
+                            <span><strong>Duration:</strong> ${exp.duration}</span>
+                            <span><strong>Tuition:</strong> ${exp.tuition_cost}</span>
+                            <span><strong>Website:</strong> <a href="${exp.website}" target="_blank">${exp.website}</a></span>
+                            <span><strong>Department Website:</strong> <a href="${exp.department_website}" target="_blank">${exp.department_website}</a></span>
+                         </div>`;
+
+                if (nestedData.courses && nestedData.courses.values.length > 0) {
+                    html += '<div class="detail-section"><h3>Courses</h3>';
+                    nestedData.courses.values.forEach(course => {
+                        html += `<div class="nested-item">
+                                    <dl>
+                                        <dt><strong>${course[2]}</strong></dt><dd><span class="difficulty-indicator ${getDifficultyClass(course[5])}"></span></dd>
+                                        <dt>Responsible Person</dt><dd>${course[3]}</dd>
+                                        <dt>Exam Type</dt><dd>${course[4]}</dd>
+                                        <dt>Description</dt><dd>${course[6]}</dd>
+                                    </dl>
+                                 </div>`;
+                    });
+                    html += '</div>';
+                }
+            } else if (exp.type === 'internship') {
+                html += `<div class="detail-section inline-details">
+                            <span><strong>Contact:</strong> ${exp.first_name} ${exp.last_name} (<a href="mailto:${exp.email}">${exp.email}</a>)</span>
+                            <span><strong>Duration:</strong> ${exp.duration}</span>
+                            ${exp.contact_person ? `<span><strong>Contact Person:</strong> ${exp.contact_person}</span>` : ''}
+                            ${exp.contact_email ? `<span><strong>Contact Email:</strong> <a href="mailto:${exp.contact_email}">${exp.contact_email}</a></span>` : ''}
+                            ${exp.website ? `<span><strong>Website:</strong> <a href="${exp.website}" target="_blank">${exp.website}</a></span>` : ''}
+                         </div>`;
+
+                html += `<div class="detail-section"><h3>Work Details</h3>
+                            <div class="nested-item">
+                                <dl>
+                                    <dt>Topic:</dt><dd>${exp.topic || 'N/A'}</dd>
+                                    <dt>Work Description:</dt><dd>${exp.work_description || 'N/A'}</dd>
+                                    <dt>Other Tasks:</dt><dd>${exp.other_tasks || 'N/A'}</dd>
+                                    <dt>Supervisor Rating:</dt><dd>${getStars(exp.supervisor_rating)}</dd>
+                                    <dt>Organization Rating:</dt><dd>${getStars(exp.organization_rating)}</dd>
+                                    <dt>Comments:</dt><dd>${exp.comments || 'N/A'}</dd>
+                                </dl>
+                            </div>
+                         </div>`;
+            }
+
+            if (nestedData.finances && nestedData.finances.values.length > 0) {
+                html += '<div class="detail-section"><h3>Finances</h3>';
+                nestedData.finances.values.forEach(finance => {
+                    html += `<div class="nested-item">
+                                <dl>
+                                    <dt>Method:</dt><dd>${finance[3]}</dd>
+                                    <dt>${finance[5] ? 'Salary' : 'Amount'}:</dt><dd>${finance[4]}</dd>
+                                    ${finance[6] ? `<dt>Finance Institution:</dt><dd>${finance[6]}</dd>` : ''}
+                                    ${finance[7] ? `<dt>Comments:</dt><dd>${finance[7]}</dd>` : ''}
+                                </dl>
+                            </div>`;
+                });
+                html += '</div>';
+            }
+
+            if (nestedData.housing && nestedData.housing.values.length > 0) {
+                html += '<div class="detail-section"><h3>Housing</h3>';
+                nestedData.housing.values.forEach(housing => {
+                    html += `<div class="nested-item">
+                                <dl>
+                                    <dt>Housing Quality:</dt><dd>${getStars(housing[5])} (${housing[5]}/5)</dd>
+                                    <dt>Type:</dt><dd>${housing[3]}</dd>
+                                    <dt>Costs:</dt><dd>${housing[7]}</dd>
+                                    <dt>Link:</dt><dd><a href="${housing[4]}" target="_blank">${housing[4]}</a></dd>
+                                    <dt>Comments:</dt><dd>${housing[6]}</dd>
+                                </dl>
+                            </div>`;
+                });
+                html += '</div>';
+            }
+
+            if (nestedData.visa && nestedData.visa.values.length > 0) {
+                html += '<div class="detail-section"><h3>Visa</h3>';
+                nestedData.visa.values.forEach(visa => {
+                    if (visa[3]) { // needed
+                        html += `<div class="nested-item">
+                                    <dl>
+                                        <dt>Cost:</dt><dd>${visa[4]}</dd>
+                                        <dt>Embassy:</dt><dd>${visa[5]} (${visa[6]})</dd>
+                                        <dt>Application Time:</dt><dd>${visa[7]}</dd>
+                                        <dt>Website:</dt><dd><a href="${visa[9]}" target="_blank">${visa[9]}</a></dd>
+                                        <dt>Comments:</dt><dd>${visa[8]}</dd>
+                                    </dl>
+                                </div>`;
+                    }
+                });
+                html += '</div>';
+            }
+
+            if (nestedData.vaccinations && nestedData.vaccinations.values.length > 0) {
+                html += '<div class="detail-section"><h3>Vaccinations</h3>';
+                nestedData.vaccinations.values.forEach(vacc => {
+                    html += `<div class="nested-item">
+                                <dl>
+                                    <dt>Type:</dt><dd>${vacc[3]}</dd>
+                                    <dt>Costs:</dt><dd>${vacc[4]}</dd>
+                                    <dt>Comments:</dt><dd>${vacc[5]}</dd>
+                                </dl>
+                             </div>`;
+                });
+                html += '</div>';
+            }
+
+            container.innerHTML = html;
+        }
+    </script>
+</body>
+</html>
+>>>>>>> 57503fa (initial state, start manual editing)
