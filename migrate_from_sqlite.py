@@ -204,12 +204,22 @@ def main():
         dest_cursor.execute("INSERT INTO users (id, first_name, last_name, user_email, user_phone, class_year) VALUES (?, ?, ?, ?, ?, ?)",
                             (row['Student_ID'], row['Stud_Vorname'], row['Stud_Name'], row['email'], row['Telefon'], row['Jahrgang']))
 
+
     # Migrate study experiences
     source_cursor.execute("SELECT * FROM tblUniversität")
     for row in source_cursor.fetchall():
-        dest_cursor.execute("INSERT OR IGNORE INTO universities (name, city, country, continent, website, department, department_website) VALUES (?, ?, ?, ?, ?, ?, ?)",
-                            (row['Uni_Name'], row['Ort'], row['Land'], row['Kontinent'], row['Homepage_Uni'], row['Abteilung'] ,row['Homepage_Abteilung']))
-        uni_id = dest_cursor.execute("SELECT id FROM universities WHERE name = ?", (row['Uni_Name'],)).fetchone()['id']
+
+        uni_id = int(row['Uni_ID'])
+        dest_cursor.execute("INSERT OR IGNORE INTO universities (id, name, city, country, continent, website, department, department_website) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+                            (uni_id,
+                            row['Uni_Name'], 
+                            row['Ort'], 
+                            row['Land'], 
+                            row['Kontinent'], 
+                            row['Homepage_Uni'], 
+                            row['Abteilung'] ,
+                            row['Homepage_Abteilung']))
+        
         dest_cursor.execute("INSERT INTO study_experiences (user_id, university_id, duration, study_fees, tuition_cost) VALUES (?, ?, ?, ?, ?)",
                             (row['Student_ID'], uni_id, row['Zeitraum Aufenthalt'], row['Studiengebühren'] == 'True', row['Höhe pro Semester']))
         study_exp_id = dest_cursor.lastrowid
@@ -276,7 +286,7 @@ def main():
         #print(Praktikums_ID)
         praktikums_id = row['Praktikums_ID']
 
-        country_name = row['Land'] if row['Land'] is not '' else 'undefined'
+        country_name = row['Land'] if row['Land'] != '' else 'undefined'
         try:
             # Attempt to convert country code to name using tblLand
             country_name_row = source_cursor.execute("SELECT Name_Land FROM tblLand WHERE Land_ID = ?", (country_name,)).fetchone()
