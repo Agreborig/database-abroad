@@ -57,7 +57,7 @@ def create_tables(conn):
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS organisations (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            name TEXT NOT NULL UNIQUE,
+            name TEXT NOT NULL,
             city TEXT,
             country TEXT,
             continent TEXT
@@ -273,9 +273,10 @@ def main():
     internship_cursor.execute("SELECT * FROM tblPraktikumsort")
     for row in internship_cursor.fetchall():
         student_id = row['Student_ID']
+        #print(Praktikums_ID)
         praktikums_id = row['Praktikums_ID']
 
-        country_name = row['Land']
+        country_name = row['Land'] if row['Land'] is not '' else 'undefined'
         try:
             # Attempt to convert country code to name using tblLand
             country_name_row = source_cursor.execute("SELECT Name_Land FROM tblLand WHERE Land_ID = ?", (country_name,)).fetchone()
@@ -297,15 +298,13 @@ def main():
             continent_name = None
         
 
-        dest_cursor.execute("INSERT OR IGNORE INTO organisations (name, city, country, continent) VALUES (?, ?, ?, ?)",
-                            (row['NameOrganisation'], row['OrtPraktikum'], country_name, continent_name))
-        comp_id = dest_cursor.execute("SELECT id FROM organisations WHERE name = ?", (row['NameOrganisation'],)).fetchone()['id']
-        
+        dest_cursor.execute("INSERT OR IGNORE INTO organisations (id, name, city, country, continent) VALUES (?, ?, ?, ?, ?)",
+                            (praktikums_id, row['NameOrganisation'], row['OrtPraktikum'], country_name, continent_name))
         work_desc_cursor = source_conn.cursor()
         work_desc_row = work_desc_cursor.execute("SELECT * FROM tblPraktikumsarbeit WHERE Praktikums_ID = ?", (praktikums_id,)).fetchone()
         
-        dest_cursor.execute("INSERT INTO internship_experiences (user_id, organisation_id, duration, work_description, topic, other_tasks, supervisor_rating, organization_rating, comments, internship_contact_person, internship_contact_email, internship_website) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-                            (student_id, comp_id, row['Zeitraum'], 
+        dest_cursor.execute("INSERT INTO internship_experiences ( user_id, organisation_id, duration, work_description, topic, other_tasks, supervisor_rating, organization_rating, comments, internship_contact_person, internship_contact_email, internship_website) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                            (student_id, praktikums_id, row['Zeitraum'], 
                              work_desc_row['BeschreibungTätigkeit'] if work_desc_row else None,
                              work_desc_row['ThemaPraktikum'] if work_desc_row else 'NULL',
                              work_desc_row['SonstigeArbeiten'] if work_desc_row else None,
