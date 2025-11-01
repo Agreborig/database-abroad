@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 * {
     margin: 0;
     padding: 0;
@@ -255,3 +256,287 @@ h1 {
 .form-tab-content.active {
     display: block;
 }
+=======
+
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
+
+:root {
+    --primary-color: #4a90e2;
+    --study-color: #50C878;
+    --internship-color: #FFA500;
+    --background-color: #f4f7f6;
+    --card-background: #ffffff;
+    --text-color: #333;
+    --shadow-color: rgba(0, 0, 0, 0.1);
+    --nested-background: #f9f9f9;
+    --difficulty-green: #28a745;
+    --difficulty-yellow: #ffc107;
+    --difficulty-red: #dc3545;
+}
+
+body {
+    font-family: 'Poppins', sans-serif;
+    background-color: var(--background-color);
+    color: var(--text-color);
+    margin: 0;
+    padding: 2em;
+}
+
+.container {
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+h1 {
+    color: var(--primary-color);
+    text-align: left;
+    margin-bottom: 0.5em;
+}
+
+p {
+    text-align: left;
+    margin-bottom: 2em;
+}
+
+.upload-container {
+    text-align: left;
+    margin-bottom: 2em;
+}
+
+.file-input {
+    width: 0.1px;
+    height: 0.1px;
+    opacity: 0;
+    overflow: hidden;
+    position: absolute;
+    z-index: -1;
+}
+
+.file-label {
+    background-color: var(--primary-color);
+    color: white;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: background-color 0.3s;
+}
+
+.file-label:hover {
+    background-color: #357abd;
+}
+
+.filters-container {
+    display: flex;
+    flex-wrap: wrap; /* Allow wrapping */
+    gap: 1em;
+    margin-bottom: 1em; /* Reduced margin */
+    background-color: var(--card-background);
+    padding: 1.5em;
+    border-radius: 10px;
+    box-shadow: 0 2px 4px var(--shadow-color);
+    align-items: center;
+}
+
+.type-filter-buttons {
+    display: flex;
+    gap: 0.5em;
+}
+
+.type-btn {
+    padding: 0.8em 1.2em;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    background-color: transparent;
+    cursor: pointer;
+    font-family: 'Poppins', sans-serif;
+    font-size: 1em;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+.type-btn.active {
+    background-color: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+}
+
+.filters-container select, .filters-container input {
+    flex-grow: 1;
+    padding: 0.8em;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-family: 'Poppins', sans-serif;
+    font-size: 1em;
+}
+
+.filters-container input::placeholder {
+    color: #aaa;
+}
+
+.filters-container select:disabled, .filters-container input:disabled, .type-btn:disabled {
+    background-color: #eee;
+    cursor: not-allowed;
+}
+
+.filter-summary {
+    margin-bottom: 2em;
+    font-style: italic;
+    color: #666;
+}
+
+.experiences-container {
+    display: grid;
+    gap: 1.5em;
+}
+
+.experience-card {
+    background-color: var(--card-background);
+    border-radius: 10px;
+    box-shadow: 0 4px 8px var(--shadow-color);
+    overflow: hidden;
+    transition: transform 0.3s;
+}
+
+.experience-card:hover {
+    transform: translateY(-5px);
+}
+
+.study-card .card-header {
+    background-color: var(--study-color);
+}
+
+.internship-card .card-header {
+    background-color: var(--internship-color);
+}
+
+.card-header {
+    display: flex;
+    justify-content: space-between; /* Keep space-between for main elements */
+    align-items: center;
+    padding: 1em 1.5em;
+    color: white;
+    cursor: pointer;
+    flex-wrap: nowrap; /* Prevent header content from wrapping */
+}
+
+.card-header h2 {
+    margin: 0;
+    font-size: 1.2em;
+    flex-shrink: 1; /* Allow title to shrink if needed */
+    min-width: 0; /* Allow shrinking below content size */
+    white-space: nowrap; /* Prevent title from wrapping */
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.card-location {
+    font-size: 1.1em;
+    font-weight: 600;
+    opacity: 0.9;
+    white-space: nowrap; /* Prevent location from wrapping */
+    flex-shrink: 0; /* Prevent location from shrinking */
+    margin-left: 1em; /* Add some space between title and location */
+}
+
+.toggle-btn {
+    background: none;
+    border: 2px solid white;
+    color: white;
+    font-size: 1.5em;
+    font-weight: bold;
+    cursor: pointer;
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    line-height: 1;
+    flex-shrink: 0; /* Prevent button from shrinking */
+    margin-left: 1em; /* Add space between location and button */
+}
+
+.card-body {
+    padding: 1.5em;
+    display: none;
+}
+
+.card-body p {
+    text-align: left;
+    margin-bottom: 0.5em;
+}
+
+.detail-section {
+    margin-bottom: 1.5em;
+}
+
+.detail-section h3 {
+    color: var(--primary-color);
+    border-bottom: 2px solid var(--primary-color);
+    padding-bottom: 0.3em;
+    margin-bottom: 1em;
+    text-align: left;
+}
+
+.inline-details {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1em;
+    margin-bottom: 1em;
+}
+
+.inline-details span {
+    background-color: var(--nested-background);
+    padding: 0.5em 1em;
+    border-radius: 5px;
+    font-size: 0.9em;
+}
+
+.nested-item {
+    background-color: var(--nested-background);
+    border-radius: 5px;
+    padding: 1em;
+    margin-top: 1em;
+    text-align: left;
+}
+
+.nested-item dl {
+    display: grid;
+    grid-template-columns: 150px 1fr;
+    gap: 0.5em 1em;
+}
+
+.nested-item dt {
+    font-weight: bold;
+}
+
+.nested-item dd {
+    margin: 0;
+}
+
+.difficulty-indicator {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    margin-left: 8px;
+    vertical-align: middle;
+}
+
+.difficulty-green {
+    background-color: var(--difficulty-green);
+}
+
+.difficulty-yellow {
+    background-color: var(--difficulty-yellow);
+}
+
+.difficulty-red {
+    background-color: var(--difficulty-red);
+}
+
+.error {
+    color: #e74c3c;
+    text-align: center;
+}
+>>>>>>> 8b0a202 (good status)

@@ -546,9 +546,9 @@
                 LEFT JOIN universities uni ON se.university_id = uni.id
             `;
             const internshipQuery = `
-                SELECT *, c.name as company_name FROM internship_experiences ie
+                SELECT *, o.name as organisation_name FROM internship_experiences ie
                 LEFT JOIN users u ON ie.user_id = u.id
-                LEFT JOIN companies c ON ie.company_id = c.id
+                LEFT JOIN organisations o ON ie.organisation_id = o.id
             `;
             const studyResults = db.exec(studyQuery);
             const internshipResults = db.exec(internshipQuery);
@@ -616,13 +616,36 @@
             nestedData.finances = financesResult.length > 0 ? financesResult[0] : { columns: [], values: [] };
             const housingResult = db.exec(`SELECT * FROM housings WHERE ${idColumn} = ${experienceId}`);
             nestedData.housing = housingResult.length > 0 ? housingResult[0] : { columns: [], values: [] };
-            const visaResult = db.exec(`SELECT * FROM visas WHERE ${idColumn} = ${experienceId}`);
+            const visaResult = db.exec(`SELECT * FROM entry_regulations WHERE ${idColumn} = ${experienceId}`);
             nestedData.visa = visaResult.length > 0 ? visaResult[0] : { columns: [], values: [] };
             const vaccinationsResult = db.exec(`SELECT * FROM vaccinations WHERE ${idColumn} = ${experienceId}`);
             nestedData.vaccinations = vaccinationsResult.length > 0 ? vaccinationsResult[0] : { columns: [], values: [] };
             
             return nestedData;
         }
+        const config = {
+            difficultyMap: {
+                5: "sehr schwer",
+                4: "schwer",
+                3: "mittel",
+                2: "leicht",
+                1: "sehr leicht"
+            },
+            emojiMap: {
+                5: '🔴',
+                4: '🔴',
+                3: '🟡',
+                2: '🟢',
+                1: '🟢'
+            },
+            housingQualityMap: {
+                5: "Sehr empfehlenswert",
+                4: "gut",
+                3: "mittelmäßig",
+                2: "gerade noch ertragbar",
+                1: "nicht empfehlenswert"
+            }
+        };
 
         function getDifficultyClass(difficulty) {
             if (difficulty <= 2) return 'difficulty-green';
@@ -679,7 +702,7 @@
                 
                 expDiv.innerHTML = `
                     <div class="card-header">
-                        <h2>${exp.type === 'study' ? `Study at ${exp.university_name}` : `Internship at ${exp.company_name}`}</h2>
+                        <h2>${exp.type === 'study' ? `${exp.university_name}, ` : `${exp.organisation_name}, `}</h2>
                         <span class="card-location">${locationText}</span>
                         <button class="toggle-btn">+</button>
                     </div>
@@ -712,7 +735,7 @@
 
             if (exp.type === 'study') {
                 html += `<div class="detail-section inline-details">
-                            <span><strong>Contact:</strong> ${exp.first_name} ${exp.last_name} (<a href="mailto:${exp.email}">${exp.email}</a>, <a href="tel:${exp.phone}">${exp.phone}</a>)</span>
+                            <span><strong>Student:</strong> ${exp.first_name} ${exp.last_name} (<a href="mailto:${exp.user_email}">${exp.user_email}</a>, <a href="tel:${exp.user_phone}">${exp.user_phone}</a>)</span>
                             <span><strong>Study Class:</strong> ${exp.class_year}</span>
                             <span><strong>Duration:</strong> ${exp.duration}</span>
                             <span><strong>Tuition:</strong> ${exp.tuition_cost}</span>
@@ -724,11 +747,13 @@
                     html += '<div class="detail-section"><h3>Courses</h3>';
                     nestedData.courses.values.forEach(course => {
                         html += `<div class="nested-item">
+                                <strong>${course[2]}</strong>
                                     <dl>
-                                        <dt><strong>${course[2]}</strong></dt><dd><span class="difficulty-indicator ${getDifficultyClass(course[5])}"></span></dd>
-                                        <dt>Responsible Person</dt><dd>${course[3]}</dd>
+                                        <dt>Difficulty</dt><dd>${config.emojiMap[course[5]]} ${course[5]} - ${config.difficultyMap[course[5]]}</dd>
+                                        <dt>Responsible Person</dt><dd>${course[3]} (<a href="mailto:${course[7]}">${course[7]}</a>)</dd>
                                         <dt>Exam Type</dt><dd>${course[4]}</dd>
                                         <dt>Description</dt><dd>${course[6]}</dd>
+                                        <dt>Practical Training</dt><dd>${course[8] ? 'Yes' : 'No'}</dd>
                                     </dl>
                                  </div>`;
                     });
@@ -736,11 +761,11 @@
                 }
             } else if (exp.type === 'internship') {
                 html += `<div class="detail-section inline-details">
-                            <span><strong>Contact:</strong> ${exp.first_name} ${exp.last_name} (<a href="mailto:${exp.email}">${exp.email}</a>)</span>
+                            <span><strong>Student:</strong> ${exp.first_name} ${exp.last_name} (<a href="mailto:${exp.user_email}">${exp.user_email}</a>)</span>
                             <span><strong>Duration:</strong> ${exp.duration}</span>
-                            ${exp.contact_person ? `<span><strong>Contact Person:</strong> ${exp.contact_person}</span>` : ''}
-                            ${exp.contact_email ? `<span><strong>Contact Email:</strong> <a href="mailto:${exp.contact_email}">${exp.contact_email}</a></span>` : ''}
-                            ${exp.website ? `<span><strong>Website:</strong> <a href="${exp.website}" target="_blank">${exp.website}</a></span>` : ''}
+                            ${exp.internship_contact_person ? `<span><strong>Contact Person:</strong> ${exp.internship_contact_person}</span>` : ''}
+                            ${exp.internship_contact_email ? `<span><strong>Contact Email:</strong> <a href="mailto:${exp.internship_contact_email}">${exp.internship_contact_email}</a></span>` : ''}
+                            ${exp.internship_website ? `<span><strong>Website:</strong> <a href="${exp.internship_website}" target="_blank">${exp.internship_website}</a></span>` : ''}
                          </div>`;
 
                 html += `<div class="detail-section"><h3>Work Details</h3>
@@ -763,9 +788,9 @@
                     html += `<div class="nested-item">
                                 <dl>
                                     <dt>Method:</dt><dd>${finance[3]}</dd>
-                                    <dt>${finance[5] ? 'Salary' : 'Amount'}:</dt><dd>${finance[4]}</dd>
-                                    ${finance[6] ? `<dt>Finance Institution:</dt><dd>${finance[6]}</dd>` : ''}
-                                    ${finance[7] ? `<dt>Comments:</dt><dd>${finance[7]}</dd>` : ''}
+                                    <dt>${finance[5] ? 'Salary' : 'Amount'}:</dt><dd>${finance[5] ? finance[6] : finance[4]}</dd>
+                                    ${finance[7] ? `<dt>Finance Institution:</dt><dd>${finance[7]}</dd>` : ''}
+                                    ${finance[11] ? `<dt>Comments:</dt><dd>${finance[11]}</dd>` : ''}
                                 </dl>
                             </div>`;
                 });
@@ -777,11 +802,13 @@
                 nestedData.housing.values.forEach(housing => {
                     html += `<div class="nested-item">
                                 <dl>
-                                    <dt>Housing Quality:</dt><dd>${getStars(housing[5])} (${housing[5]}/5)</dd>
+                                    <dt>Housing Quality:</dt><dd>${getStars(housing[4])} (${housing[4]}/5)</dd>
                                     <dt>Type:</dt><dd>${housing[3]}</dd>
-                                    <dt>Costs:</dt><dd>${housing[7]}</dd>
-                                    <dt>Link:</dt><dd><a href="${housing[4]}" target="_blank">${housing[4]}</a></dd>
-                                    <dt>Comments:</dt><dd>${housing[6]}</dd>
+                                    <dt>Costs:</dt><dd>${housing[8]}</dd>
+                                    <dt>Website:</dt><dd><a href="${housing[5]}" target="_blank">${housing[5]}</a></dd>
+                                    <dt>Email:</dt><dd><a href="mailto:${housing[6]}">${housing[6]}</a></dd>
+                                    <dt>Phone:</dt><dd><a href="tel:${housing[7]}">${housing[7]}</a></dd>
+                                    <dt>Comments:</dt><dd>${housing[9]}</dd>
                                 </dl>
                             </div>`;
                 });
@@ -789,16 +816,16 @@
             }
 
             if (nestedData.visa && nestedData.visa.values.length > 0) {
-                html += '<div class="detail-section"><h3>Visa</h3>';
+                html += '<div class="detail-section"><h3>Entry Regulations</h3>';
                 nestedData.visa.values.forEach(visa => {
-                    if (visa[3]) { // needed
+                    if (visa[3]) { // visa_needed
                         html += `<div class="nested-item">
                                     <dl>
                                         <dt>Cost:</dt><dd>${visa[4]}</dd>
-                                        <dt>Embassy:</dt><dd>${visa[5]} (${visa[6]})</dd>
-                                        <dt>Application Time:</dt><dd>${visa[7]}</dd>
-                                        <dt>Website:</dt><dd><a href="${visa[9]}" target="_blank">${visa[9]}</a></dd>
-                                        <dt>Comments:</dt><dd>${visa[8]}</dd>
+                                        <dt>Embassy:</dt><dd>${visa[6]} (${visa[7]})</dd>
+                                        <dt>Application Time:</dt><dd>${visa[5]}</dd>
+                                        <dt>Website:</dt><dd><a href="${visa[8]}" target="_blank">${visa[8]}</a></dd>
+                                        <dt>Comments:</dt><dd>${visa[11]}</dd>
                                     </dl>
                                 </div>`;
                     }
@@ -813,7 +840,11 @@
                                 <dl>
                                     <dt>Type:</dt><dd>${vacc[3]}</dd>
                                     <dt>Costs:</dt><dd>${vacc[4]}</dd>
-                                    <dt>Comments:</dt><dd>${vacc[5]}</dd>
+                                    <dt>Institution:</dt><dd>${vacc[5]}</dd>
+                                    <dt>Address:</dt><dd>${vacc[6]}, ${vacc[7]} ${vacc[8]}</dd>
+                                    <dt>Email:</dt><dd><a href="mailto:${vacc[10]}">${vacc[10]}</a></dd>
+                                    <dt>Phone:</dt><dd><a href="tel:${vacc[9]}">${vacc[9]}</a></dd>
+                                    <dt>Comments:</dt><dd>${vacc[11]}</dd>
                                 </dl>
                              </div>`;
                 });
