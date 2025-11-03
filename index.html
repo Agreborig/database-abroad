@@ -335,6 +335,7 @@
             } else if (exp.type === 'internship') {
                 html += `<div class="detail-section inline-details">
                             <span><strong>Student:</strong> ${exp.first_name} ${exp.last_name} (<a href="mailto:${exp.user_email}">${exp.user_email}</a>)</span>
+                            <span><strong>Study Class:</strong> ${exp.class_year}</span>
                             <span><strong>Duration:</strong> ${exp.duration}</span>
                             ${exp.internship_contact_person ? `<span><strong>Contact Person:</strong> ${exp.internship_contact_person}</span>` : ''}
                             ${exp.internship_contact_email ? `<span><strong>Contact Email:</strong> <a href="mailto:${exp.internship_contact_email}">${exp.internship_contact_email}</a></span>` : ''}
