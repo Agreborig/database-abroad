@@ -91,12 +91,12 @@
 
         function fetchExperiences(db) {
             const studyQuery = `
-                SELECT *, uni.name as university_name FROM study_experiences se
+                SELECT se.id as experience_id, *, uni.name as university_name FROM study_experiences se
                 LEFT JOIN users u ON se.user_id = u.id
                 LEFT JOIN universities uni ON se.university_id = uni.id
             `;
             const internshipQuery = `
-                SELECT *, o.name as organisation_name FROM internship_experiences ie
+                SELECT ie.id as experience_id, *, o.name as organisation_name FROM internship_experiences ie
                 LEFT JOIN users u ON ie.user_id = u.id
                 LEFT JOIN organisations o ON ie.organisation_id = o.id
             `;
@@ -285,7 +285,7 @@
                 const nestedDataContainer = expDiv.querySelector('.nested-data');
 
                 if (isExpandedView) {
-                    const nestedData = fetchNestedData(exp.id, exp.type);
+                    const nestedData = fetchNestedData(exp.experience_id, exp.type);
                     renderNestedData(nestedDataContainer, exp, nestedData, false);
                 }
 
@@ -296,7 +296,7 @@
                     toggleBtn.textContent = isVisible ? '+' : '-';
 
                     if (!isVisible && !nestedDataContainer.innerHTML) {
-                        const nestedData = fetchNestedData(exp.id, exp.type);
+                        const nestedData = fetchNestedData(exp.experience_id, exp.type);
                         renderNestedData(nestedDataContainer, exp, nestedData, false);
                     }
                 });
